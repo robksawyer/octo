@@ -30,6 +30,16 @@ cli.partsMatch({ queries: [{mpn: "SN74S74N"}], exact_only: true }, console.log);
 // with response filter
 cli.partsMatch({ queries: [{mpn: "SN74S74N"}] }, { show: ['mpn', 'brand.name'] }, console.log);
 
+// with includes[]
+cli.partsMatch({ queries: [{
+    mpn: "SN74S74N",
+    include: ['datasheets','imagesets']
+  },
+  {
+    q: "SN*",
+    include: ['imagesets']
+  }] }, { show: ['mpn', 'brand.name'] }, console.log);
+
 // pass a callback(err, data)
 cli.brandsByID('2239e3330e2df5fe', function(err, data) {
     if (!err)
