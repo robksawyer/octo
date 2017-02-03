@@ -84,10 +84,30 @@ var OctoNode = function(apikey, apipath) {
 	// filters = response filters
 	self.partsMatch = function(args, filters, cb) {
 		var params = Object.keys(args).map(function(key) {
-			//Big fix: Octopart doesn't like it when include items have quotes around them.
-			//TODO: You're allowed to include multiple includes e.g. ...&include[]=datasheets&include[]=imagesets...
-			if(key === 'include[]'){
-				return key + '=' + querystring.escape(args[key]);
+			// Bug fix: Octopart doesn't like it when include items have quotes around them.
+			// Also added ability to use includes[]
+			// Usage example:
+			// 		cli.partsMatch({
+			//			queries: queries,
+			//			exact_only: false,
+			//			include: ['datasheets','imagesets'],
+			// 		}
+			if(key === 'include'){
+				// Split the array and make separate includes like Octopart likes.
+				if (Array.isArray(args[key])){
+					var keys = '';
+					for(var i = 0; i < args[key].length; i++) {
+						if(i > 0){
+							keys += '&' + key + '[]=' + querystring.escape(args[key][i]);
+						} else {
+							keys = key + '[]=' + querystring.escape(args[key][i]);
+						}
+					}
+					return keys;
+				} else {
+					return key + '=' + querystring.escape(args[key]);
+				}
+
 			} else {
 				return key + '=' + querystring.escape(JSON.stringify(args[key]));
 			}
