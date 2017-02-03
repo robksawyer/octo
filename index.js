@@ -84,7 +84,13 @@ var OctoNode = function(apikey, apipath) {
 	// filters = response filters
 	self.partsMatch = function(args, filters, cb) {
 		var params = Object.keys(args).map(function(key) {
-			return key + '=' + querystring.escape(JSON.stringify(args[key]));
+			//Big fix: Octopart doesn't like it when include items have quotes around them.
+			//TODO: You're allowed to include multiple includes e.g. ...&include[]=datasheets&include[]=imagesets...
+			if(key === 'include[]'){
+				return key + '=' + querystring.escape(args[key]);
+			} else {
+				return key + '=' + querystring.escape(JSON.stringify(args[key]));
+			}
 		});
 		return send('parts/match', params, filters, cb);
 	};
