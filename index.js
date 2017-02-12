@@ -74,10 +74,7 @@ var OctoNode = function(apikey, apipath) {
 		if (typeof filters === 'function') {
 			cb = filters; // skip filters
 		} else if (filters) {
-			console.log(filters);
-			console.log('==============');
 			params = params.concat(encodeCatFilters(filters));
-			console.log(params);
 		}
 		var opt = {
 			headers: {
@@ -89,7 +86,6 @@ var OctoNode = function(apikey, apipath) {
 				search: params.join('&') + '&apikey=' + apikey
 			})
 		};
-		console.log(opt);
 		return request.get(opt, cb ? function(err, res, body) {
 			if (err)
 				cb(err);
@@ -133,7 +129,6 @@ var OctoNode = function(apikey, apipath) {
 			filters.category_id = [].concat(uids).map(function(uid) {
 				return uid;
 			});
-			console.log(filters);
 		} else {
 			filters = { category_id: uid };
 		}
