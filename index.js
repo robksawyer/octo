@@ -74,8 +74,12 @@ var OctoNode = function(apikey, apipath) {
 		if (typeof filters === 'function') {
 			cb = filters; // skip filters
 		} else if (filters) {
-			params = params.concat(encodeCatFilters(filters));
+			filters = encodeCatFilters(filters);
 		}
+		params = Object.keys(params).map(function(k) {
+			return k + '=' + params[k];
+		});
+		params = params.concat(filters);
 		var opt = {
 			headers: {
 				Accept: 'application/json' },

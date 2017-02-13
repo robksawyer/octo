@@ -32,7 +32,11 @@ cli.partsMatch({ queries: [{mpn: "SN74S74N"}] }, { show: ['mpn', 'brand.name'] }
 
 // Find parts from category uids
 // TODO: Fix the ability to pass params
-cli.partsByCategory([4454, 3332], [], function(err, res) {
+cli.partsByCategory([4454], {}, function(err, res) {
+  ...
+}
+cli.partsByCategory([4454], { limit: 20, start: 3 }, function(err, res) {
+  ...
 }
 
 // with includes[]
