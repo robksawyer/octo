@@ -36,7 +36,7 @@ function encodeCatFilters(filters) {
 	return flatten(Object.keys(filters).map(function(k) {
 		var v = Array.prototype.concat.apply([], filters[k]);
 		return v.map(function(vi) {
-			return 'filters=["'+ k + '"[' + vi + ']]';
+			return 'filter[fields][' + k + '][]=' + vi;
 		});
 	}));
 }
@@ -130,11 +130,11 @@ var OctoNode = function(apikey, apipath) {
 		// });
 		var filters = {};
 		if (Array.isArray(uids)) {
-			filters.category_id = [].concat(uids).map(function(uid) {
+			filters.category_uids = [].concat(uids).map(function(uid) {
 				return uid;
 			});
 		} else {
-			filters = { category_id: uid };
+			filters = { category_uids: uid };
 		}
 		return sendVariation('parts/search', params, filters, cb);
 	}
