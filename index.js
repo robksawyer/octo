@@ -36,7 +36,14 @@ function encodeCatFilters(filters) {
 	return flatten(Object.keys(filters).map(function(k) {
 		var v = Array.prototype.concat.apply([], filters[k]);
 		return v.map(function(vi) {
-			return 'filter[fields][' + k + '][]=' + vi;
+			switch(k){
+				case 'category_uids':
+						return 'filter[fields][' + k + '][]=' + vi;
+						break;
+				default:
+					return 'include[]=' + vi;
+					break;
+			}
 		});
 	}));
 }
@@ -90,6 +97,7 @@ var OctoNode = function(apikey, apipath) {
 				search: params.join('&') + '&apikey=' + apikey
 			})
 		};
+		console.log(opt);
 		return request.get(opt, cb ? function(err, res, body) {
 			if (err)
 				cb(err);
@@ -123,19 +131,23 @@ var OctoNode = function(apikey, apipath) {
 	});
 
 	// Handles searching for parts via category id(s)
-	// ex. partsByCategory([3394, 445], {limit: 15}, cb)
-	self.partsByCategory = function(uids, params, cb){
+	// ex. partsByCategory([8a1e4714bb3951d9], {limit: 15}, cb)
+	self.partsByCategory = function(filters, params, cb){
 		// var params = [].concat(args).map(function(key) {
 		// 	return querystring.stringify(key);
 		// });
-		var filters = {};
-		if (Array.isArray(uids)) {
-			filters.category_uids = [].concat(uids).map(function(uid) {
+		if (Array.isArray(filters.include)) {
+			filters.include = [].concat(filters.include).map(function(include) {
+				return include;
+			});
+		}
+		if (Array.isArray(filters.uids)) {
+			filters.category_uids = [].concat(filters.uids).map(function(uid) {
 				return uid;
 			});
-		} else {
-			filters = { category_uids: uid };
+			delete filters.uids;
 		}
+		console.log(filters);
 		return sendVariation('parts/search', params, filters, cb);
 	}
 

@@ -31,11 +31,10 @@ cli.partsMatch({ queries: [{mpn: "SN74S74N"}], exact_only: true }, console.log);
 cli.partsMatch({ queries: [{mpn: "SN74S74N"}] }, { show: ['mpn', 'brand.name'] }, console.log);
 
 // Find parts from category uids
-// TODO: Fix the ability to pass params
-cli.partsByCategory([4454], {}, function(err, res) {
+cli.partsByCategory({ uids: ['8a1e4714bb3951d9'] }, {}, function(err, res) {
   ...
 }
-cli.partsByCategory([4454], { limit: 20, start: 3 }, function(err, res) {
+cli.partsByCategory({ include: ['datasheets'], uids: ['8a1e4714bb3951d9'] }, { limit: 20, start: 3 }, function(err, res) {
   ...
 }
 
