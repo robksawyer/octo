@@ -18,7 +18,7 @@ function flatten(arr) {
 		]
 	}*/
 function encodeFilters(filters) {
-	return flatten(Object.keys(filters).map(function(k) {
+	var result = flatten(Object.keys(filters).map(function(k) {
 		var v = Array.prototype.concat.apply([], filters[k]);
 		return v.map(function(vi) {
 			if (vi instanceof Object) {
@@ -30,21 +30,91 @@ function encodeFilters(filters) {
 			}
 		});
 	}));
+	return result;
 }
 
-function encodeCatFilters(filters) {
+// Handles encoding with filters
+/*	response filters
+	filters = {
+		parent_id: '8a1e4714bb3951d9',
+	}*/
+function encodeWithFilters(filters) {
 	return flatten(Object.keys(filters).map(function(k) {
-		var v = Array.prototype.concat.apply([], filters[k]);
-		return v.map(function(vi) {
-			switch(k){
-				case 'category_uids':
-						return 'filter[fields][' + k + '][]=' + vi;
-						break;
-				default:
-					return 'include[]=' + vi;
-					break;
-			}
-		});
+			// TODO: Is this a use case?
+			// if(filters[k] instanceof Object){
+			// 	var v = Array.prototype.concat.apply([], filters[k]);
+			// 	console.log(v);
+			// 	return v.map(function(vi) {
+			// 		console.log(vi);
+			// 		return Object.keys(vi).map(function(ki) {
+			// 			console.log(ki);
+			// 			console.log(vi[ki]);
+			// 			return 'filter[' + ki + ']=' + querystring.escape(vi[ki]); // e.g. slice[field1]=1:5
+			// 		});
+			// 	});
+			return '';
+		} else {
+			return 'filter[fields][' + k + '][]=' + querystring.escape(filters[k]); // e.g. filter[parent_id]=8a1e4714bb3951d9
+		}
+	}));
+}
+
+// Handles encoding with facets
+// See https://octopart.com/api/docs/v3/rest-api#object-schemas-category
+function encodeWithFacets(facets, transform) {
+	var acceptedTransforms = ['include','exclude_filter','start','limit'];
+	if(!transform){
+		transform = acceptedTransforms[0];
+	} else {
+		if(acceptedTransforms.indexOf(transform) < 0){
+			// Was not able to find this option. Force to "include"
+			transform = acceptedTransforms[0];
+		}
+	}
+	return flatten(Object.keys(filters).map(function(k) {
+		if(filters[k] instanceof Object){
+			// TODO: Is this a use case?
+			// var v = Array.prototype.concat.apply([], filters[k]);
+			// return v.map(function(vi) {
+			// 	return Object.keys(vi).map(function(ki) {
+			// 		return 'facet[' + ki + ']=' + querystring.escape(vi[ki]); // e.g. slice[field1]=1:5
+			// 	});
+			// });
+			return '';
+		} else {
+			return 'facet[fields][' + k + '][' + transform + ']=' + querystring.escape(filters[k]); // e.g. filter[parent_id]=8a1e4714bb3951d9
+		}
+	}));
+	}));
+}
+
+// Handles encoding with stats
+// Figure out a clever way to add exclude_filter
+// See https://octopart.com/api/docs/v3/rest-api#object-schemas-category
+function encodeWithStats(filters) {
+	var acceptedTransforms = ['include','exclude_filter','start','limit'];
+	if(!transform){
+		transform = acceptedTransforms[0];
+	} else {
+		if(acceptedTransforms.indexOf(transform) < 0){
+			// Was not able to find this option. Force to "include"
+			transform = acceptedTransforms[0];
+		}
+	}
+	return flatten(Object.keys(filters).map(function(k) {
+		if(filters[k] instanceof Object){
+			// TODO: Is this a use case?
+			// var v = Array.prototype.concat.apply([], filters[k]);
+			// return v.map(function(vi) {
+			// 	return Object.keys(vi).map(function(ki) {
+			// 		return 'facet[' + ki + ']=' + querystring.escape(vi[ki]); // e.g. slice[field1]=1:5
+			// 	});
+			// });
+			return '';
+		} else {
+			return 'stats[fields][' + k + '][' + transform + ']=' + querystring.escape(filters[k]); // e.g. filter[parent_id]=8a1e4714bb3951d9
+		}
+	}));
 	}));
 }
 
@@ -77,16 +147,12 @@ var OctoNode = function(apikey, apipath) {
 		} : null);
 	};
 
-	var sendVariation = function(path, params, filters, cb) {
+	var sendWithFilters = function(path, params, filters, cb) {
 		if (typeof filters === 'function') {
 			cb = filters; // skip filters
 		} else if (filters) {
-			filters = encodeCatFilters(filters);
+			params = params.concat(encodeWithFilters(filters));
 		}
-		params = Object.keys(params).map(function(k) {
-			return k + '=' + params[k];
-		});
-		params = params.concat(filters);
 		var opt = {
 			headers: {
 				Accept: 'application/json' },
@@ -97,7 +163,6 @@ var OctoNode = function(apikey, apipath) {
 				search: params.join('&') + '&apikey=' + apikey
 			})
 		};
-		console.log(opt);
 		return request.get(opt, cb ? function(err, res, body) {
 			if (err)
 				cb(err);
@@ -132,10 +197,10 @@ var OctoNode = function(apikey, apipath) {
 
 	// Handles searching for parts via category id(s)
 	// ex. partsByCategory([8a1e4714bb3951d9], {limit: 15}, cb)
-	self.partsByCategory = function(filters, params, cb){
-		// var params = [].concat(args).map(function(key) {
-		// 	return querystring.stringify(key);
-		// });
+	self.partsByCategory = function(filters, args, cb){
+		var params = [].concat(args).map(function(key) {
+			return querystring.stringify(key);
+		});
 		if (Array.isArray(filters.include)) {
 			filters.include = [].concat(filters.include).map(function(include) {
 				return include;
@@ -147,8 +212,18 @@ var OctoNode = function(apikey, apipath) {
 			});
 			delete filters.uids;
 		}
-		console.log(filters);
-		return sendVariation('parts/search', params, filters, cb);
+		return sendWithFilters('parts/search', params, filters, cb);
+	}
+
+	// Handles finding categories that share the passed parent_id
+	// https://octopart.com/api/v3/categories/search?apikey=API_KEY&filter[fields][parent_uid][]=8a1e4714bb3951d9
+	// 8a1e4714bb3951d9 = Electronic Parts
+	self.categoriesByFilter = function(args, filters, cb){
+		var params = [].concat(args).map(function(key) {
+			return querystring.stringify(key);
+		});
+
+		return sendWithFilters('parts/search', params, filters, cb);
 	}
 
 	// args = { queries: [{...}, {...}], exact_only: true }
