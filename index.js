@@ -85,7 +85,6 @@ function encodeWithFacets(facets, transform) {
 			return 'facet[fields][' + k + '][' + transform + ']=' + querystring.escape(filters[k]); // e.g. filter[parent_id]=8a1e4714bb3951d9
 		}
 	}));
-	}));
 }
 
 // Handles encoding with stats
@@ -114,7 +113,6 @@ function encodeWithStats(filters) {
 		} else {
 			return 'stats[fields][' + k + '][' + transform + ']=' + querystring.escape(filters[k]); // e.g. filter[parent_id]=8a1e4714bb3951d9
 		}
-	}));
 	}));
 }
 
