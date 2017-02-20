@@ -40,8 +40,8 @@ function encodeFilters(filters) {
 	}*/
 function encodeWithFilters(filters) {
 	return flatten(Object.keys(filters).map(function(k) {
-			// TODO: Is this a use case?
-			// if(filters[k] instanceof Object){
+		// TODO: Is this a use case?
+		if(filters[k] instanceof Object){
 			// 	var v = Array.prototype.concat.apply([], filters[k]);
 			// 	console.log(v);
 			// 	return v.map(function(vi) {
@@ -217,7 +217,8 @@ var OctoNode = function(apikey, apipath) {
 
 	// Handles finding categories that share the passed parent_id
 	// https://octopart.com/api/v3/categories/search?apikey=API_KEY&filter[fields][parent_uid][]=8a1e4714bb3951d9
-	// 8a1e4714bb3951d9 = Electronic Parts
+	// args = { queries: [{...}, {...}], exact_only: true }
+	// filters = { parent_id: 8a1e4714bb3951d9 }
 	self.categoriesByFilter = function(args, filters, cb){
 		var params = [].concat(args).map(function(key) {
 			return querystring.stringify(key);
