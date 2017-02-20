@@ -222,7 +222,7 @@ var OctoNode = function(apikey, apipath) {
 			return querystring.stringify(key);
 		});
 
-		return sendWithFilters('parts/search', params, filters, cb);
+		return sendWithFilters('categories/search', params, filters, cb);
 	}
 
 	// args = { queries: [{...}, {...}], exact_only: true }
