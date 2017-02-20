@@ -54,7 +54,14 @@ function encodeWithFilters(filters) {
 			// 	});
 			return '';
 		} else {
-			return 'filter[fields][' + k + '][]=' + querystring.escape(filters[k]); // e.g. filter[parent_id]=8a1e4714bb3951d9
+			switch(k){
+				case 'ancestor_uids':
+					return 'filter[fields][' + k + '][' + querystring.escape(filters[k]) + ']';
+					break;
+				default:
+					return 'filter[fields][' + k + '][]=' + querystring.escape(filters[k]); // e.g. filter[parent_id]=8a1e4714bb3951d9
+					break;
+			}
 		}
 	}));
 }
@@ -161,6 +168,7 @@ var OctoNode = function(apikey, apipath) {
 				search: params.join('&') + '&apikey=' + apikey
 			})
 		};
+		console.log(opt);
 		return request.get(opt, cb ? function(err, res, body) {
 			if (err)
 				cb(err);
@@ -216,12 +224,17 @@ var OctoNode = function(apikey, apipath) {
 	// Handles finding categories that share the passed parent_id
 	// https://octopart.com/api/v3/categories/search?apikey=API_KEY&filter[fields][parent_uid][]=8a1e4714bb3951d9
 	// args = { queries: [{...}, {...}], exact_only: true }
+	// includes = ['imagesets']
 	// filters = { parent_id: 8a1e4714bb3951d9 }
-	self.categoriesByFilter = function(args, filters, cb){
+	self.categoriesByFilter = function(args, filters, includes, cb){
 		var params = [].concat(args).map(function(key) {
 			return querystring.stringify(key);
 		});
-
+		if(includes.length > 0){
+			for(var i=0;i<includes.length;i++){
+				params[0] += '&include[]=' + includes[i]
+			}
+		}
 		return sendWithFilters('categories/search', params, filters, cb);
 	}
 
