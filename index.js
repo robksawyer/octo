@@ -58,6 +58,9 @@ function encodeWithFilters(filters) {
 				case 'ancestor_uids':
 					return 'filter[fields][' + k + '][' + querystring.escape(filters[k]) + ']';
 					break;
+				case 'children_uids':
+					return 'filter[fields][' + k + '][' + querystring.escape(filters[k]) + ']';
+					break;
 				default:
 					return 'filter[fields][' + k + '][]=' + querystring.escape(filters[k]); // e.g. filter[parent_id]=8a1e4714bb3951d9
 					break;
@@ -168,7 +171,6 @@ var OctoNode = function(apikey, apipath) {
 				search: params.join('&') + '&apikey=' + apikey
 			})
 		};
-		console.log(opt);
 		return request.get(opt, cb ? function(err, res, body) {
 			if (err)
 				cb(err);
