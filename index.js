@@ -40,19 +40,18 @@ function encodeFilters(filters) {
 	}*/
 function encodeWithFilters(filters) {
 	return flatten(Object.keys(filters).map(function(k) {
-		// TODO: Is this a use case?
 		if(filters[k] instanceof Object){
-			// 	var v = Array.prototype.concat.apply([], filters[k]);
-			// 	console.log(v);
-			// 	return v.map(function(vi) {
-			// 		console.log(vi);
-			// 		return Object.keys(vi).map(function(ki) {
-			// 			console.log(ki);
-			// 			console.log(vi[ki]);
-			// 			return 'filter[' + ki + ']=' + querystring.escape(vi[ki]); // e.g. slice[field1]=1:5
-			// 		});
-			// 	});
-			return '';
+				var v = Array.prototype.concat.apply([], filters[k]);
+				return v.map(function(vi) {
+					switch(k){
+						case 'include':
+							return 'include[]=' + querystring.escape(vi);
+							break;
+						default:
+							return 'filter[fields][' + k + '][]=' + querystring.escape(vi);
+							break;
+					}
+				});
 		} else {
 			switch(k){
 				case 'ancestor_uids':
@@ -171,6 +170,7 @@ var OctoNode = function(apikey, apipath) {
 				search: params.join('&') + '&apikey=' + apikey
 			})
 		};
+		console.log(opt);
 		return request.get(opt, cb ? function(err, res, body) {
 			if (err)
 				cb(err);
@@ -214,12 +214,12 @@ var OctoNode = function(apikey, apipath) {
 				return include;
 			});
 		}
-		if (Array.isArray(filters.uids)) {
-			filters.category_uids = [].concat(filters.uids).map(function(uid) {
+		if (Array.isArray(filters.category_uids)) {
+			filters.category_uids = [].concat(filters.category_uids).map(function(uid) {
 				return uid;
 			});
-			delete filters.uids;
 		}
+		console.log(filters);
 		return sendWithFilters('parts/search', params, filters, cb);
 	}
 
